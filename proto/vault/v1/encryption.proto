@@ -4,39 +4,67 @@ package vault.v1;
 
 option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
 
+// EncryptionService provides AES-256-GCM encryption, decryption,
+// and HKDF-SHA256 key derivation operations.
 service EncryptionService {
+  // Encrypt encrypts plaintext using AES-256-GCM with the specified key.
+  // The returned ciphertext has a 12-byte random nonce prepended.
   rpc Encrypt(EncryptRequest) returns (EncryptResponse);
+  // Decrypt decrypts ciphertext that was produced by Encrypt.
+  // The nonce is extracted from the first 12 bytes of the ciphertext.
   rpc Decrypt(DecryptRequest) returns (DecryptResponse);
+  // DeriveKey derives a new key from a root key using HKDF-SHA256.
+  // The derived key length must be between 1 and 64 bytes.
   rpc DeriveKey(DeriveKeyRequest) returns (DeriveKeyResponse);
 }
 
+// EncryptRequest is the request to encrypt data.
 message EncryptRequest {
+  // key_id identifies the AES-256 encryption key.
   string key_id = 1;
+  // plaintext is the data to encrypt.
   bytes plaintext = 2;
+  // aad is optional additional authenticated data. It is authenticated
+  // but not encrypted, and must be provided again for decryption.
   bytes aad = 3;
 }
 
+// EncryptResponse contains the encrypted data.
 message EncryptResponse {
+  // ciphertext is the encrypted data with a 12-byte nonce prepended.
   bytes ciphertext = 1;
+  // key_id is the identifier of the key used for encryption.
   string key_id = 2;
 }
 
+// DecryptRequest is the request to decrypt data.
 message DecryptRequest {
+  // key_id identifies the AES-256 decryption key.
   string key_id = 1;
+  // ciphertext is the encrypted data with the 12-byte nonce prepended.
   bytes ciphertext = 2;
+  // aad is the additional authenticated data that was used during encryption.
   bytes aad = 3;
 }
 
+// DecryptResponse contains the decrypted data.
 message DecryptResponse {
+  // plaintext is the original unencrypted data.
   bytes plaintext = 1;
 }
 
+// DeriveKeyRequest is the request to derive a key from a root key.
 message DeriveKeyRequest {
+  // root_key_id identifies the root key used as input keying material.
   string root_key_id = 1;
+  // context is application-specific info passed to HKDF (the "info" parameter).
   bytes context = 2;
+  // length is the desired derived key length in bytes (1-64).
   int32 length = 3;
 }
 
+// DeriveKeyResponse contains the derived key material.
 message DeriveKeyResponse {
+  // derived_key is the key material produced by HKDF-SHA256.
   bytes derived_key = 1;
 }

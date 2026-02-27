@@ -21,10 +21,13 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// SignRequest is the request to sign a single data payload.
 type SignRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the signing key. Must be an active key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// data is the raw bytes to sign.
+	Data          []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,10 +76,13 @@ func (x *SignRequest) GetData() []byte {
 	return nil
 }
 
+// SignResponse contains the computed signature.
 type SignResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Signature     []byte                 `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
-	KeyId         string                 `protobuf:"bytes,2,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// signature is the ECDSA signature in ASN.1 DER format.
+	Signature []byte `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
+	// key_id is the identifier of the key that produced the signature.
+	KeyId         string `protobuf:"bytes,2,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -125,11 +131,15 @@ func (x *SignResponse) GetKeyId() string {
 	return ""
 }
 
+// VerifyRequest contains the data, signature, and key to verify against.
 type VerifyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Signature     []byte                 `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the verification key. Accepts keys in any status.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// data is the original data that was signed.
+	Data []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	// signature is the ECDSA signature to verify.
+	Signature     []byte `protobuf:"bytes,3,opt,name=signature,proto3" json:"signature,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -185,9 +195,11 @@ func (x *VerifyRequest) GetSignature() []byte {
 	return nil
 }
 
+// VerifyResponse indicates whether the signature is valid.
 type VerifyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// valid is true when the signature matches the data and key.
+	Valid         bool `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -229,10 +241,13 @@ func (x *VerifyResponse) GetValid() bool {
 	return false
 }
 
+// BatchSignRequest signs multiple payloads with a single key.
 type BatchSignRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Data          [][]byte               `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the signing key. Must be an active key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// data is the list of payloads to sign.
+	Data          [][]byte `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -281,9 +296,11 @@ func (x *BatchSignRequest) GetData() [][]byte {
 	return nil
 }
 
+// BatchSignResponse contains the result for each payload in order.
 type BatchSignResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Results       []*SignResult          `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// results contains one SignResult per input payload, in the same order.
+	Results       []*SignResult `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -325,10 +342,13 @@ func (x *BatchSignResponse) GetResults() []*SignResult {
 	return nil
 }
 
+// SignResult holds the outcome of a single signing operation within a batch.
 type SignResult struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Signature     []byte                 `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
-	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// signature is the ECDSA signature, empty on error.
+	Signature []byte `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
+	// error is a description of the failure, empty on success.
+	Error         string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -377,10 +397,13 @@ func (x *SignResult) GetError() string {
 	return ""
 }
 
+// StreamSignRequest is a single signing request within a bidirectional stream.
 type StreamSignRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the signing key. Must be an active key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// data is the raw bytes to sign.
+	Data          []byte `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -429,10 +452,13 @@ func (x *StreamSignRequest) GetData() []byte {
 	return nil
 }
 
+// StreamSignResponse is the result for a single stream signing request.
 type StreamSignResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Signature     []byte                 `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
-	Error         string                 `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// signature is the ECDSA signature, empty on error.
+	Signature []byte `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
+	// error is a description of the failure, empty on success.
+	Error         string `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

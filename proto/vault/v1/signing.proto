@@ -4,53 +4,89 @@ package vault.v1;
 
 option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
 
+// SigningService provides ECDSA digital signature operations including
+// single, batch, and bidirectional streaming signing and verification.
 service SigningService {
+  // Sign computes an ECDSA signature over the provided data using the
+  // specified key. The key must be in active status.
   rpc Sign(SignRequest) returns (SignResponse);
+  // Verify checks an ECDSA signature against the provided data.
+  // Unlike Sign, this accepts keys in any status (active, rotated, or deactivated).
   rpc Verify(VerifyRequest) returns (VerifyResponse);
+  // BatchSign signs multiple data payloads with the same key in parallel.
+  // Concurrency is bounded by a worker pool limited to runtime.NumCPU.
   rpc BatchSign(BatchSignRequest) returns (BatchSignResponse);
+  // StreamSign provides bidirectional streaming for signing. Each request
+  // is processed independently and a response is sent for every request.
   rpc StreamSign(stream StreamSignRequest) returns (stream StreamSignResponse);
 }
 
+// SignRequest is the request to sign a single data payload.
 message SignRequest {
+  // key_id identifies the signing key. Must be an active key.
   string key_id = 1;
+  // data is the raw bytes to sign.
   bytes data = 2;
 }
 
+// SignResponse contains the computed signature.
 message SignResponse {
+  // signature is the ECDSA signature in ASN.1 DER format.
   bytes signature = 1;
+  // key_id is the identifier of the key that produced the signature.
   string key_id = 2;
 }
 
+// VerifyRequest contains the data, signature, and key to verify against.
 message VerifyRequest {
+  // key_id identifies the verification key. Accepts keys in any status.
   string key_id = 1;
+  // data is the original data that was signed.
   bytes data = 2;
+  // signature is the ECDSA signature to verify.
   bytes signature = 3;
 }
 
+// VerifyResponse indicates whether the signature is valid.
 message VerifyResponse {
+  // valid is true when the signature matches the data and key.
   bool valid = 1;
 }
 
+// BatchSignRequest signs multiple payloads with a single key.
 message BatchSignRequest {
+  // key_id identifies the signing key. Must be an active key.
   string key_id = 1;
+  // data is the list of payloads to sign.
   repeated bytes data = 2;
 }
 
+// BatchSignResponse contains the result for each payload in order.
 message BatchSignResponse {
+  // results contains one SignResult per input payload, in the same order.
   repeated SignResult results = 1;
 }
 
+// SignResult holds the outcome of a single signing operation within a batch.
 message SignResult {
+  // signature is the ECDSA signature, empty on error.
   bytes signature = 1;
+  // error is a description of the failure, empty on success.
   string error = 2;
 }
 
+// StreamSignRequest is a single signing request within a bidirectional stream.
 message StreamSignRequest {
+  // key_id identifies the signing key. Must be an active key.
   string key_id = 1;
+  // data is the raw bytes to sign.
   bytes data = 2;
 }
 
+// StreamSignResponse is the result for a single stream signing request.
 message StreamSignResponse {
+  // signature is the ECDSA signature, empty on error.
   bytes signature = 1;
+  // error is a description of the failure, empty on success.
   string error = 2;
 }

@@ -30,12 +30,24 @@ const (
 // KeyManagementServiceClient is the client API for KeyManagementService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// KeyManagementService manages the lifecycle of cryptographic keys,
+// including generation, rotation, deactivation, and event streaming.
 type KeyManagementServiceClient interface {
+	// GenerateKey creates a new ECDSA key pair and stores it in the vault.
 	GenerateKey(ctx context.Context, in *GenerateKeyRequest, opts ...grpc.CallOption) (*GenerateKeyResponse, error)
+	// GetPublicKey returns the DER-encoded public key for a given key ID.
 	GetPublicKey(ctx context.Context, in *GetPublicKeyRequest, opts ...grpc.CallOption) (*GetPublicKeyResponse, error)
+	// ListKeys returns all keys, optionally filtered by status.
 	ListKeys(ctx context.Context, in *ListKeysRequest, opts ...grpc.CallOption) (*ListKeysResponse, error)
+	// RotateKey generates a new key to replace the specified key. The old key
+	// transitions to KEY_STATUS_ROTATED and remains available for verification.
 	RotateKey(ctx context.Context, in *RotateKeyRequest, opts ...grpc.CallOption) (*RotateKeyResponse, error)
+	// DeactivateKey marks a key as deactivated, preventing its use for
+	// signing or encryption. Verification with the key is still allowed.
 	DeactivateKey(ctx context.Context, in *DeactivateKeyRequest, opts ...grpc.CallOption) (*DeactivateKeyResponse, error)
+	// WatchKeyEvents opens a server-side stream that emits key lifecycle
+	// events (created, rotated, deactivated) in real time.
 	WatchKeyEvents(ctx context.Context, in *WatchKeyEventsRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[KeyEvent], error)
 }
 
@@ -119,12 +131,24 @@ type KeyManagementService_WatchKeyEventsClient = grpc.ServerStreamingClient[KeyE
 // KeyManagementServiceServer is the server API for KeyManagementService service.
 // All implementations must embed UnimplementedKeyManagementServiceServer
 // for forward compatibility.
+//
+// KeyManagementService manages the lifecycle of cryptographic keys,
+// including generation, rotation, deactivation, and event streaming.
 type KeyManagementServiceServer interface {
+	// GenerateKey creates a new ECDSA key pair and stores it in the vault.
 	GenerateKey(context.Context, *GenerateKeyRequest) (*GenerateKeyResponse, error)
+	// GetPublicKey returns the DER-encoded public key for a given key ID.
 	GetPublicKey(context.Context, *GetPublicKeyRequest) (*GetPublicKeyResponse, error)
+	// ListKeys returns all keys, optionally filtered by status.
 	ListKeys(context.Context, *ListKeysRequest) (*ListKeysResponse, error)
+	// RotateKey generates a new key to replace the specified key. The old key
+	// transitions to KEY_STATUS_ROTATED and remains available for verification.
 	RotateKey(context.Context, *RotateKeyRequest) (*RotateKeyResponse, error)
+	// DeactivateKey marks a key as deactivated, preventing its use for
+	// signing or encryption. Verification with the key is still allowed.
 	DeactivateKey(context.Context, *DeactivateKeyRequest) (*DeactivateKeyResponse, error)
+	// WatchKeyEvents opens a server-side stream that emits key lifecycle
+	// events (created, rotated, deactivated) in real time.
 	WatchKeyEvents(*WatchKeyEventsRequest, grpc.ServerStreamingServer[KeyEvent]) error
 	mustEmbedUnimplementedKeyManagementServiceServer()
 }

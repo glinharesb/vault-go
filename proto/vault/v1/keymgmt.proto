@@ -6,92 +6,157 @@ option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
 
 import "google/protobuf/timestamp.proto";
 
+// KeyManagementService manages the lifecycle of cryptographic keys,
+// including generation, rotation, deactivation, and event streaming.
 service KeyManagementService {
+  // GenerateKey creates a new ECDSA key pair and stores it in the vault.
   rpc GenerateKey(GenerateKeyRequest) returns (GenerateKeyResponse);
+  // GetPublicKey returns the DER-encoded public key for a given key ID.
   rpc GetPublicKey(GetPublicKeyRequest) returns (GetPublicKeyResponse);
+  // ListKeys returns all keys, optionally filtered by status.
   rpc ListKeys(ListKeysRequest) returns (ListKeysResponse);
+  // RotateKey generates a new key to replace the specified key. The old key
+  // transitions to KEY_STATUS_ROTATED and remains available for verification.
   rpc RotateKey(RotateKeyRequest) returns (RotateKeyResponse);
+  // DeactivateKey marks a key as deactivated, preventing its use for
+  // signing or encryption. Verification with the key is still allowed.
   rpc DeactivateKey(DeactivateKeyRequest) returns (DeactivateKeyResponse);
+  // WatchKeyEvents opens a server-side stream that emits key lifecycle
+  // events (created, rotated, deactivated) in real time.
   rpc WatchKeyEvents(WatchKeyEventsRequest) returns (stream KeyEvent);
 }
 
+// KeyAlgorithm specifies the elliptic curve algorithm for key generation.
 enum KeyAlgorithm {
+  // KEY_ALGORITHM_UNSPECIFIED defaults to ECDSA P-256 on the server.
   KEY_ALGORITHM_UNSPECIFIED = 0;
+  // KEY_ALGORITHM_ECDSA_P256 selects the NIST P-256 curve.
   KEY_ALGORITHM_ECDSA_P256 = 1;
+  // KEY_ALGORITHM_ECDSA_P384 selects the NIST P-384 curve.
   KEY_ALGORITHM_ECDSA_P384 = 2;
 }
 
+// KeyStatus represents the current lifecycle state of a key.
 enum KeyStatus {
+  // KEY_STATUS_UNSPECIFIED is the zero value; not used in practice.
   KEY_STATUS_UNSPECIFIED = 0;
+  // KEY_STATUS_ACTIVE indicates the key is available for all operations.
   KEY_STATUS_ACTIVE = 1;
+  // KEY_STATUS_ROTATED indicates the key was replaced by a newer key.
+  // Rotated keys can still be used for verification and decryption.
   KEY_STATUS_ROTATED = 2;
+  // KEY_STATUS_DEACTIVATED indicates the key is disabled.
+  // Deactivated keys can still be used for verification.
   KEY_STATUS_DEACTIVATED = 3;
 }
 
+// KeyMetadata contains the identifying information and state of a key.
 message KeyMetadata {
+  // key_id is the unique identifier for this key.
   string key_id = 1;
+  // algorithm is the elliptic curve algorithm used by this key.
   KeyAlgorithm algorithm = 2;
+  // status is the current lifecycle state of the key.
   KeyStatus status = 3;
+  // created_at is the timestamp when the key was generated.
   google.protobuf.Timestamp created_at = 4;
+  // rotated_at is the timestamp when the key was rotated, if applicable.
   google.protobuf.Timestamp rotated_at = 5;
+  // labels are user-defined key-value pairs for organizing keys.
   map<string, string> labels = 6;
 }
 
+// GenerateKeyRequest is the request to create a new key pair.
 message GenerateKeyRequest {
+  // algorithm selects the curve. Defaults to P-256 when unspecified.
   KeyAlgorithm algorithm = 1;
+  // labels are optional key-value pairs attached to the key.
   map<string, string> labels = 2;
 }
 
+// GenerateKeyResponse contains the metadata of the newly created key.
 message GenerateKeyResponse {
+  // metadata is the generated key's metadata.
   KeyMetadata metadata = 1;
 }
 
+// GetPublicKeyRequest identifies the key whose public key is requested.
 message GetPublicKeyRequest {
+  // key_id is the unique identifier of the key.
   string key_id = 1;
 }
 
+// GetPublicKeyResponse returns the public key material.
 message GetPublicKeyResponse {
+  // key_id is the identifier of the key.
   string key_id = 1;
+  // public_key_der is the public key encoded in DER (SubjectPublicKeyInfo) format.
   bytes public_key_der = 2;
+  // algorithm is the curve used by this key.
   KeyAlgorithm algorithm = 3;
 }
 
+// ListKeysRequest optionally filters the returned keys by status.
 message ListKeysRequest {
+  // status_filter limits results to keys with this status.
+  // When unspecified, all keys are returned.
   KeyStatus status_filter = 1;
 }
 
+// ListKeysResponse contains the list of matching keys.
 message ListKeysResponse {
+  // keys is the list of key metadata entries.
   repeated KeyMetadata keys = 1;
 }
 
+// RotateKeyRequest identifies the key to rotate.
 message RotateKeyRequest {
+  // key_id is the identifier of the key to rotate.
   string key_id = 1;
 }
 
+// RotateKeyResponse returns metadata for both the old and new keys.
 message RotateKeyResponse {
+  // old_key is the metadata of the rotated (replaced) key.
   KeyMetadata old_key = 1;
+  // new_key is the metadata of the newly generated replacement key.
   KeyMetadata new_key = 2;
 }
 
+// DeactivateKeyRequest identifies the key to deactivate.
 message DeactivateKeyRequest {
+  // key_id is the identifier of the key to deactivate.
   string key_id = 1;
 }
 
+// DeactivateKeyResponse contains the updated metadata after deactivation.
 message DeactivateKeyResponse {
+  // metadata is the key's metadata with its status set to deactivated.
   KeyMetadata metadata = 1;
 }
 
+// WatchKeyEventsRequest starts streaming key lifecycle events.
+// No filters are applied; all events are delivered.
 message WatchKeyEventsRequest {}
 
+// KeyEventType classifies a key lifecycle event.
 enum KeyEventType {
+  // KEY_EVENT_TYPE_UNSPECIFIED is the zero value; not used in practice.
   KEY_EVENT_TYPE_UNSPECIFIED = 0;
+  // KEY_EVENT_TYPE_CREATED indicates a new key was generated.
   KEY_EVENT_TYPE_CREATED = 1;
+  // KEY_EVENT_TYPE_ROTATED indicates a key was rotated.
   KEY_EVENT_TYPE_ROTATED = 2;
+  // KEY_EVENT_TYPE_DEACTIVATED indicates a key was deactivated.
   KEY_EVENT_TYPE_DEACTIVATED = 3;
 }
 
+// KeyEvent represents a single key lifecycle event.
 message KeyEvent {
+  // type is the kind of event that occurred.
   KeyEventType type = 1;
+  // metadata is the key's metadata at the time of the event.
   KeyMetadata metadata = 2;
+  // timestamp is when the event occurred.
   google.protobuf.Timestamp timestamp = 3;
 }

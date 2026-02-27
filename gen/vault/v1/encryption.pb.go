@@ -21,11 +21,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// EncryptRequest is the request to encrypt data.
 type EncryptRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Plaintext     []byte                 `protobuf:"bytes,2,opt,name=plaintext,proto3" json:"plaintext,omitempty"`
-	Aad           []byte                 `protobuf:"bytes,3,opt,name=aad,proto3" json:"aad,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the AES-256 encryption key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// plaintext is the data to encrypt.
+	Plaintext []byte `protobuf:"bytes,2,opt,name=plaintext,proto3" json:"plaintext,omitempty"`
+	// aad is optional additional authenticated data. It is authenticated
+	// but not encrypted, and must be provided again for decryption.
+	Aad           []byte `protobuf:"bytes,3,opt,name=aad,proto3" json:"aad,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,10 +86,13 @@ func (x *EncryptRequest) GetAad() []byte {
 	return nil
 }
 
+// EncryptResponse contains the encrypted data.
 type EncryptResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Ciphertext    []byte                 `protobuf:"bytes,1,opt,name=ciphertext,proto3" json:"ciphertext,omitempty"`
-	KeyId         string                 `protobuf:"bytes,2,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// ciphertext is the encrypted data with a 12-byte nonce prepended.
+	Ciphertext []byte `protobuf:"bytes,1,opt,name=ciphertext,proto3" json:"ciphertext,omitempty"`
+	// key_id is the identifier of the key used for encryption.
+	KeyId         string `protobuf:"bytes,2,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -133,11 +141,15 @@ func (x *EncryptResponse) GetKeyId() string {
 	return ""
 }
 
+// DecryptRequest is the request to decrypt data.
 type DecryptRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Ciphertext    []byte                 `protobuf:"bytes,2,opt,name=ciphertext,proto3" json:"ciphertext,omitempty"`
-	Aad           []byte                 `protobuf:"bytes,3,opt,name=aad,proto3" json:"aad,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id identifies the AES-256 decryption key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// ciphertext is the encrypted data with the 12-byte nonce prepended.
+	Ciphertext []byte `protobuf:"bytes,2,opt,name=ciphertext,proto3" json:"ciphertext,omitempty"`
+	// aad is the additional authenticated data that was used during encryption.
+	Aad           []byte `protobuf:"bytes,3,opt,name=aad,proto3" json:"aad,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -193,9 +205,11 @@ func (x *DecryptRequest) GetAad() []byte {
 	return nil
 }
 
+// DecryptResponse contains the decrypted data.
 type DecryptResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Plaintext     []byte                 `protobuf:"bytes,1,opt,name=plaintext,proto3" json:"plaintext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// plaintext is the original unencrypted data.
+	Plaintext     []byte `protobuf:"bytes,1,opt,name=plaintext,proto3" json:"plaintext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -237,11 +251,15 @@ func (x *DecryptResponse) GetPlaintext() []byte {
 	return nil
 }
 
+// DeriveKeyRequest is the request to derive a key from a root key.
 type DeriveKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	RootKeyId     string                 `protobuf:"bytes,1,opt,name=root_key_id,json=rootKeyId,proto3" json:"root_key_id,omitempty"`
-	Context       []byte                 `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
-	Length        int32                  `protobuf:"varint,3,opt,name=length,proto3" json:"length,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// root_key_id identifies the root key used as input keying material.
+	RootKeyId string `protobuf:"bytes,1,opt,name=root_key_id,json=rootKeyId,proto3" json:"root_key_id,omitempty"`
+	// context is application-specific info passed to HKDF (the "info" parameter).
+	Context []byte `protobuf:"bytes,2,opt,name=context,proto3" json:"context,omitempty"`
+	// length is the desired derived key length in bytes (1-64).
+	Length        int32 `protobuf:"varint,3,opt,name=length,proto3" json:"length,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -297,9 +315,11 @@ func (x *DeriveKeyRequest) GetLength() int32 {
 	return 0
 }
 
+// DeriveKeyResponse contains the derived key material.
 type DeriveKeyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DerivedKey    []byte                 `protobuf:"bytes,1,opt,name=derived_key,json=derivedKey,proto3" json:"derived_key,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// derived_key is the key material produced by HKDF-SHA256.
+	DerivedKey    []byte `protobuf:"bytes,1,opt,name=derived_key,json=derivedKey,proto3" json:"derived_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

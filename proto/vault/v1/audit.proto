@@ -6,31 +6,54 @@ option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
 
 import "google/protobuf/timestamp.proto";
 
+// AuditService provides access to the audit log of vault operations.
 service AuditService {
+  // QueryAudit returns audit entries matching the provided filters.
   rpc QueryAudit(QueryAuditRequest) returns (QueryAuditResponse);
+  // StreamAudit opens a server-side stream that delivers new audit
+  // entries in real time as operations occur.
   rpc StreamAudit(StreamAuditRequest) returns (stream AuditEntry);
 }
 
+// AuditEntry records a single audited vault operation.
 message AuditEntry {
+  // id is the unique identifier of this audit entry.
   string id = 1;
+  // timestamp is when the operation occurred.
   google.protobuf.Timestamp timestamp = 2;
+  // operation is the name of the RPC that was invoked (e.g. "Sign", "Encrypt").
   string operation = 3;
+  // key_id is the identifier of the key involved, if applicable.
   string key_id = 4;
+  // status is the outcome of the operation (e.g. "OK", "ERROR").
   string status = 5;
+  // peer_address is the client's network address.
   string peer_address = 6;
+  // metadata contains additional context as key-value pairs.
   map<string, string> metadata = 7;
 }
 
+// QueryAuditRequest specifies filters for querying audit entries.
+// All filters are optional; when omitted, no filtering is applied.
 message QueryAuditRequest {
+  // key_id filters entries by the key involved.
   string key_id = 1;
+  // operation filters entries by RPC name.
   string operation = 2;
+  // start_time limits results to entries at or after this timestamp.
   google.protobuf.Timestamp start_time = 3;
+  // end_time limits results to entries at or before this timestamp.
   google.protobuf.Timestamp end_time = 4;
+  // limit caps the number of returned entries.
   int32 limit = 5;
 }
 
+// QueryAuditResponse contains the matching audit entries.
 message QueryAuditResponse {
+  // entries is the list of audit entries matching the query filters.
   repeated AuditEntry entries = 1;
 }
 
+// StreamAuditRequest starts streaming audit entries in real time.
+// No filters are applied; all entries are delivered.
 message StreamAuditRequest {}

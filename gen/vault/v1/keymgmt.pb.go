@@ -22,12 +22,16 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// KeyAlgorithm specifies the elliptic curve algorithm for key generation.
 type KeyAlgorithm int32
 
 const (
+	// KEY_ALGORITHM_UNSPECIFIED defaults to ECDSA P-256 on the server.
 	KeyAlgorithm_KEY_ALGORITHM_UNSPECIFIED KeyAlgorithm = 0
-	KeyAlgorithm_KEY_ALGORITHM_ECDSA_P256  KeyAlgorithm = 1
-	KeyAlgorithm_KEY_ALGORITHM_ECDSA_P384  KeyAlgorithm = 2
+	// KEY_ALGORITHM_ECDSA_P256 selects the NIST P-256 curve.
+	KeyAlgorithm_KEY_ALGORITHM_ECDSA_P256 KeyAlgorithm = 1
+	// KEY_ALGORITHM_ECDSA_P384 selects the NIST P-384 curve.
+	KeyAlgorithm_KEY_ALGORITHM_ECDSA_P384 KeyAlgorithm = 2
 )
 
 // Enum value maps for KeyAlgorithm.
@@ -71,12 +75,19 @@ func (KeyAlgorithm) EnumDescriptor() ([]byte, []int) {
 	return file_vault_v1_keymgmt_proto_rawDescGZIP(), []int{0}
 }
 
+// KeyStatus represents the current lifecycle state of a key.
 type KeyStatus int32
 
 const (
+	// KEY_STATUS_UNSPECIFIED is the zero value; not used in practice.
 	KeyStatus_KEY_STATUS_UNSPECIFIED KeyStatus = 0
-	KeyStatus_KEY_STATUS_ACTIVE      KeyStatus = 1
-	KeyStatus_KEY_STATUS_ROTATED     KeyStatus = 2
+	// KEY_STATUS_ACTIVE indicates the key is available for all operations.
+	KeyStatus_KEY_STATUS_ACTIVE KeyStatus = 1
+	// KEY_STATUS_ROTATED indicates the key was replaced by a newer key.
+	// Rotated keys can still be used for verification and decryption.
+	KeyStatus_KEY_STATUS_ROTATED KeyStatus = 2
+	// KEY_STATUS_DEACTIVATED indicates the key is disabled.
+	// Deactivated keys can still be used for verification.
 	KeyStatus_KEY_STATUS_DEACTIVATED KeyStatus = 3
 )
 
@@ -123,12 +134,17 @@ func (KeyStatus) EnumDescriptor() ([]byte, []int) {
 	return file_vault_v1_keymgmt_proto_rawDescGZIP(), []int{1}
 }
 
+// KeyEventType classifies a key lifecycle event.
 type KeyEventType int32
 
 const (
+	// KEY_EVENT_TYPE_UNSPECIFIED is the zero value; not used in practice.
 	KeyEventType_KEY_EVENT_TYPE_UNSPECIFIED KeyEventType = 0
-	KeyEventType_KEY_EVENT_TYPE_CREATED     KeyEventType = 1
-	KeyEventType_KEY_EVENT_TYPE_ROTATED     KeyEventType = 2
+	// KEY_EVENT_TYPE_CREATED indicates a new key was generated.
+	KeyEventType_KEY_EVENT_TYPE_CREATED KeyEventType = 1
+	// KEY_EVENT_TYPE_ROTATED indicates a key was rotated.
+	KeyEventType_KEY_EVENT_TYPE_ROTATED KeyEventType = 2
+	// KEY_EVENT_TYPE_DEACTIVATED indicates a key was deactivated.
 	KeyEventType_KEY_EVENT_TYPE_DEACTIVATED KeyEventType = 3
 )
 
@@ -175,14 +191,21 @@ func (KeyEventType) EnumDescriptor() ([]byte, []int) {
 	return file_vault_v1_keymgmt_proto_rawDescGZIP(), []int{2}
 }
 
+// KeyMetadata contains the identifying information and state of a key.
 type KeyMetadata struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	Algorithm     KeyAlgorithm           `protobuf:"varint,2,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
-	Status        KeyStatus              `protobuf:"varint,3,opt,name=status,proto3,enum=vault.v1.KeyStatus" json:"status,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	RotatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=rotated_at,json=rotatedAt,proto3" json:"rotated_at,omitempty"`
-	Labels        map[string]string      `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id is the unique identifier for this key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// algorithm is the elliptic curve algorithm used by this key.
+	Algorithm KeyAlgorithm `protobuf:"varint,2,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
+	// status is the current lifecycle state of the key.
+	Status KeyStatus `protobuf:"varint,3,opt,name=status,proto3,enum=vault.v1.KeyStatus" json:"status,omitempty"`
+	// created_at is the timestamp when the key was generated.
+	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// rotated_at is the timestamp when the key was rotated, if applicable.
+	RotatedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=rotated_at,json=rotatedAt,proto3" json:"rotated_at,omitempty"`
+	// labels are user-defined key-value pairs for organizing keys.
+	Labels        map[string]string `protobuf:"bytes,6,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -259,10 +282,13 @@ func (x *KeyMetadata) GetLabels() map[string]string {
 	return nil
 }
 
+// GenerateKeyRequest is the request to create a new key pair.
 type GenerateKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Algorithm     KeyAlgorithm           `protobuf:"varint,1,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
-	Labels        map[string]string      `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// algorithm selects the curve. Defaults to P-256 when unspecified.
+	Algorithm KeyAlgorithm `protobuf:"varint,1,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
+	// labels are optional key-value pairs attached to the key.
+	Labels        map[string]string `protobuf:"bytes,2,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,9 +337,11 @@ func (x *GenerateKeyRequest) GetLabels() map[string]string {
 	return nil
 }
 
+// GenerateKeyResponse contains the metadata of the newly created key.
 type GenerateKeyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *KeyMetadata           `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metadata is the generated key's metadata.
+	Metadata      *KeyMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -355,9 +383,11 @@ func (x *GenerateKeyResponse) GetMetadata() *KeyMetadata {
 	return nil
 }
 
+// GetPublicKeyRequest identifies the key whose public key is requested.
 type GetPublicKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id is the unique identifier of the key.
+	KeyId         string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -399,11 +429,15 @@ func (x *GetPublicKeyRequest) GetKeyId() string {
 	return ""
 }
 
+// GetPublicKeyResponse returns the public key material.
 type GetPublicKeyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
-	PublicKeyDer  []byte                 `protobuf:"bytes,2,opt,name=public_key_der,json=publicKeyDer,proto3" json:"public_key_der,omitempty"`
-	Algorithm     KeyAlgorithm           `protobuf:"varint,3,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id is the identifier of the key.
+	KeyId string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// public_key_der is the public key encoded in DER (SubjectPublicKeyInfo) format.
+	PublicKeyDer []byte `protobuf:"bytes,2,opt,name=public_key_der,json=publicKeyDer,proto3" json:"public_key_der,omitempty"`
+	// algorithm is the curve used by this key.
+	Algorithm     KeyAlgorithm `protobuf:"varint,3,opt,name=algorithm,proto3,enum=vault.v1.KeyAlgorithm" json:"algorithm,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -459,9 +493,12 @@ func (x *GetPublicKeyResponse) GetAlgorithm() KeyAlgorithm {
 	return KeyAlgorithm_KEY_ALGORITHM_UNSPECIFIED
 }
 
+// ListKeysRequest optionally filters the returned keys by status.
 type ListKeysRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	StatusFilter  KeyStatus              `protobuf:"varint,1,opt,name=status_filter,json=statusFilter,proto3,enum=vault.v1.KeyStatus" json:"status_filter,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// status_filter limits results to keys with this status.
+	// When unspecified, all keys are returned.
+	StatusFilter  KeyStatus `protobuf:"varint,1,opt,name=status_filter,json=statusFilter,proto3,enum=vault.v1.KeyStatus" json:"status_filter,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -503,9 +540,11 @@ func (x *ListKeysRequest) GetStatusFilter() KeyStatus {
 	return KeyStatus_KEY_STATUS_UNSPECIFIED
 }
 
+// ListKeysResponse contains the list of matching keys.
 type ListKeysResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Keys          []*KeyMetadata         `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// keys is the list of key metadata entries.
+	Keys          []*KeyMetadata `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -547,9 +586,11 @@ func (x *ListKeysResponse) GetKeys() []*KeyMetadata {
 	return nil
 }
 
+// RotateKeyRequest identifies the key to rotate.
 type RotateKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id is the identifier of the key to rotate.
+	KeyId         string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -591,10 +632,13 @@ func (x *RotateKeyRequest) GetKeyId() string {
 	return ""
 }
 
+// RotateKeyResponse returns metadata for both the old and new keys.
 type RotateKeyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	OldKey        *KeyMetadata           `protobuf:"bytes,1,opt,name=old_key,json=oldKey,proto3" json:"old_key,omitempty"`
-	NewKey        *KeyMetadata           `protobuf:"bytes,2,opt,name=new_key,json=newKey,proto3" json:"new_key,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// old_key is the metadata of the rotated (replaced) key.
+	OldKey *KeyMetadata `protobuf:"bytes,1,opt,name=old_key,json=oldKey,proto3" json:"old_key,omitempty"`
+	// new_key is the metadata of the newly generated replacement key.
+	NewKey        *KeyMetadata `protobuf:"bytes,2,opt,name=new_key,json=newKey,proto3" json:"new_key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -643,9 +687,11 @@ func (x *RotateKeyResponse) GetNewKey() *KeyMetadata {
 	return nil
 }
 
+// DeactivateKeyRequest identifies the key to deactivate.
 type DeactivateKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// key_id is the identifier of the key to deactivate.
+	KeyId         string `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -687,9 +733,11 @@ func (x *DeactivateKeyRequest) GetKeyId() string {
 	return ""
 }
 
+// DeactivateKeyResponse contains the updated metadata after deactivation.
 type DeactivateKeyResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *KeyMetadata           `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// metadata is the key's metadata with its status set to deactivated.
+	Metadata      *KeyMetadata `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -731,6 +779,8 @@ func (x *DeactivateKeyResponse) GetMetadata() *KeyMetadata {
 	return nil
 }
 
+// WatchKeyEventsRequest starts streaming key lifecycle events.
+// No filters are applied; all events are delivered.
 type WatchKeyEventsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -767,10 +817,14 @@ func (*WatchKeyEventsRequest) Descriptor() ([]byte, []int) {
 	return file_vault_v1_keymgmt_proto_rawDescGZIP(), []int{11}
 }
 
+// KeyEvent represents a single key lifecycle event.
 type KeyEvent struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Type          KeyEventType           `protobuf:"varint,1,opt,name=type,proto3,enum=vault.v1.KeyEventType" json:"type,omitempty"`
-	Metadata      *KeyMetadata           `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// type is the kind of event that occurred.
+	Type KeyEventType `protobuf:"varint,1,opt,name=type,proto3,enum=vault.v1.KeyEventType" json:"type,omitempty"`
+	// metadata is the key's metadata at the time of the event.
+	Metadata *KeyMetadata `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	// timestamp is when the event occurred.
 	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

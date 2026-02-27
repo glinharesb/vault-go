@@ -26,8 +26,13 @@ const (
 // AuditServiceClient is the client API for AuditService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// AuditService provides access to the audit log of vault operations.
 type AuditServiceClient interface {
+	// QueryAudit returns audit entries matching the provided filters.
 	QueryAudit(ctx context.Context, in *QueryAuditRequest, opts ...grpc.CallOption) (*QueryAuditResponse, error)
+	// StreamAudit opens a server-side stream that delivers new audit
+	// entries in real time as operations occur.
 	StreamAudit(ctx context.Context, in *StreamAuditRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[AuditEntry], error)
 }
 
@@ -71,8 +76,13 @@ type AuditService_StreamAuditClient = grpc.ServerStreamingClient[AuditEntry]
 // AuditServiceServer is the server API for AuditService service.
 // All implementations must embed UnimplementedAuditServiceServer
 // for forward compatibility.
+//
+// AuditService provides access to the audit log of vault operations.
 type AuditServiceServer interface {
+	// QueryAudit returns audit entries matching the provided filters.
 	QueryAudit(context.Context, *QueryAuditRequest) (*QueryAuditResponse, error)
+	// StreamAudit opens a server-side stream that delivers new audit
+	// entries in real time as operations occur.
 	StreamAudit(*StreamAuditRequest, grpc.ServerStreamingServer[AuditEntry]) error
 	mustEmbedUnimplementedAuditServiceServer()
 }

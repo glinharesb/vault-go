@@ -27,9 +27,18 @@ const (
 // EncryptionServiceClient is the client API for EncryptionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// EncryptionService provides AES-256-GCM encryption, decryption,
+// and HKDF-SHA256 key derivation operations.
 type EncryptionServiceClient interface {
+	// Encrypt encrypts plaintext using AES-256-GCM with the specified key.
+	// The returned ciphertext has a 12-byte random nonce prepended.
 	Encrypt(ctx context.Context, in *EncryptRequest, opts ...grpc.CallOption) (*EncryptResponse, error)
+	// Decrypt decrypts ciphertext that was produced by Encrypt.
+	// The nonce is extracted from the first 12 bytes of the ciphertext.
 	Decrypt(ctx context.Context, in *DecryptRequest, opts ...grpc.CallOption) (*DecryptResponse, error)
+	// DeriveKey derives a new key from a root key using HKDF-SHA256.
+	// The derived key length must be between 1 and 64 bytes.
 	DeriveKey(ctx context.Context, in *DeriveKeyRequest, opts ...grpc.CallOption) (*DeriveKeyResponse, error)
 }
 
@@ -74,9 +83,18 @@ func (c *encryptionServiceClient) DeriveKey(ctx context.Context, in *DeriveKeyRe
 // EncryptionServiceServer is the server API for EncryptionService service.
 // All implementations must embed UnimplementedEncryptionServiceServer
 // for forward compatibility.
+//
+// EncryptionService provides AES-256-GCM encryption, decryption,
+// and HKDF-SHA256 key derivation operations.
 type EncryptionServiceServer interface {
+	// Encrypt encrypts plaintext using AES-256-GCM with the specified key.
+	// The returned ciphertext has a 12-byte random nonce prepended.
 	Encrypt(context.Context, *EncryptRequest) (*EncryptResponse, error)
+	// Decrypt decrypts ciphertext that was produced by Encrypt.
+	// The nonce is extracted from the first 12 bytes of the ciphertext.
 	Decrypt(context.Context, *DecryptRequest) (*DecryptResponse, error)
+	// DeriveKey derives a new key from a root key using HKDF-SHA256.
+	// The derived key length must be between 1 and 64 bytes.
 	DeriveKey(context.Context, *DeriveKeyRequest) (*DeriveKeyResponse, error)
 	mustEmbedUnimplementedEncryptionServiceServer()
 }

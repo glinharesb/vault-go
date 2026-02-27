@@ -28,10 +28,21 @@ const (
 // SigningServiceClient is the client API for SigningService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// SigningService provides ECDSA digital signature operations including
+// single, batch, and bidirectional streaming signing and verification.
 type SigningServiceClient interface {
+	// Sign computes an ECDSA signature over the provided data using the
+	// specified key. The key must be in active status.
 	Sign(ctx context.Context, in *SignRequest, opts ...grpc.CallOption) (*SignResponse, error)
+	// Verify checks an ECDSA signature against the provided data.
+	// Unlike Sign, this accepts keys in any status (active, rotated, or deactivated).
 	Verify(ctx context.Context, in *VerifyRequest, opts ...grpc.CallOption) (*VerifyResponse, error)
+	// BatchSign signs multiple data payloads with the same key in parallel.
+	// Concurrency is bounded by a worker pool limited to runtime.NumCPU.
 	BatchSign(ctx context.Context, in *BatchSignRequest, opts ...grpc.CallOption) (*BatchSignResponse, error)
+	// StreamSign provides bidirectional streaming for signing. Each request
+	// is processed independently and a response is sent for every request.
 	StreamSign(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StreamSignRequest, StreamSignResponse], error)
 }
 
@@ -89,10 +100,21 @@ type SigningService_StreamSignClient = grpc.BidiStreamingClient[StreamSignReques
 // SigningServiceServer is the server API for SigningService service.
 // All implementations must embed UnimplementedSigningServiceServer
 // for forward compatibility.
+//
+// SigningService provides ECDSA digital signature operations including
+// single, batch, and bidirectional streaming signing and verification.
 type SigningServiceServer interface {
+	// Sign computes an ECDSA signature over the provided data using the
+	// specified key. The key must be in active status.
 	Sign(context.Context, *SignRequest) (*SignResponse, error)
+	// Verify checks an ECDSA signature against the provided data.
+	// Unlike Sign, this accepts keys in any status (active, rotated, or deactivated).
 	Verify(context.Context, *VerifyRequest) (*VerifyResponse, error)
+	// BatchSign signs multiple data payloads with the same key in parallel.
+	// Concurrency is bounded by a worker pool limited to runtime.NumCPU.
 	BatchSign(context.Context, *BatchSignRequest) (*BatchSignResponse, error)
+	// StreamSign provides bidirectional streaming for signing. Each request
+	// is processed independently and a response is sent for every request.
 	StreamSign(grpc.BidiStreamingServer[StreamSignRequest, StreamSignResponse]) error
 	mustEmbedUnimplementedSigningServiceServer()
 }

@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package vault.v1;
+
+option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
+
+import "google/protobuf/timestamp.proto";
+
+service AuditService {
+  rpc QueryAudit(QueryAuditRequest) returns (QueryAuditResponse);
+  rpc StreamAudit(StreamAuditRequest) returns (stream AuditEntry);
+}
+
+message AuditEntry {
+  string id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  string operation = 3;
+  string key_id = 4;
+  string status = 5;
+  string peer_address = 6;
+  map<string, string> metadata = 7;
+}
+
+message QueryAuditRequest {
+  string key_id = 1;
+  string operation = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+  int32 limit = 5;
+}
+
+message QueryAuditResponse {
+  repeated AuditEntry entries = 1;
+}
+
+message StreamAuditRequest {}

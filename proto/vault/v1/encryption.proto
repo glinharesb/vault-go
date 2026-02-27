@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package vault.v1;
+
+option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
+
+service EncryptionService {
+  rpc Encrypt(EncryptRequest) returns (EncryptResponse);
+  rpc Decrypt(DecryptRequest) returns (DecryptResponse);
+  rpc DeriveKey(DeriveKeyRequest) returns (DeriveKeyResponse);
+}
+
+message EncryptRequest {
+  string key_id = 1;
+  bytes plaintext = 2;
+  bytes aad = 3;
+}
+
+message EncryptResponse {
+  bytes ciphertext = 1;
+  string key_id = 2;
+}
+
+message DecryptRequest {
+  string key_id = 1;
+  bytes ciphertext = 2;
+  bytes aad = 3;
+}
+
+message DecryptResponse {
+  bytes plaintext = 1;
+}
+
+message DeriveKeyRequest {
+  string root_key_id = 1;
+  bytes context = 2;
+  int32 length = 3;
+}
+
+message DeriveKeyResponse {
+  bytes derived_key = 1;
+}

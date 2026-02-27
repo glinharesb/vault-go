@@ -1,0 +1,16 @@
+services:
+  vault-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      VAULT_GRPC_ADDR: ":50051"
+      VAULT_AUTH_TOKEN: "dev-token"
+      VAULT_DATA_DIR: "/data"
+    volumes:
+      - vault-data:/data
+
+volumes:
+  vault-data:

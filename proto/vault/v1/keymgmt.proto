@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package vault.v1;
+
+option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
+
+import "google/protobuf/timestamp.proto";
+
+service KeyManagementService {
+  rpc GenerateKey(GenerateKeyRequest) returns (GenerateKeyResponse);
+  rpc GetPublicKey(GetPublicKeyRequest) returns (GetPublicKeyResponse);
+  rpc ListKeys(ListKeysRequest) returns (ListKeysResponse);
+  rpc RotateKey(RotateKeyRequest) returns (RotateKeyResponse);
+  rpc DeactivateKey(DeactivateKeyRequest) returns (DeactivateKeyResponse);
+  rpc WatchKeyEvents(WatchKeyEventsRequest) returns (stream KeyEvent);
+}
+
+enum KeyAlgorithm {
+  KEY_ALGORITHM_UNSPECIFIED = 0;
+  KEY_ALGORITHM_ECDSA_P256 = 1;
+  KEY_ALGORITHM_ECDSA_P384 = 2;
+}
+
+enum KeyStatus {
+  KEY_STATUS_UNSPECIFIED = 0;
+  KEY_STATUS_ACTIVE = 1;
+  KEY_STATUS_ROTATED = 2;
+  KEY_STATUS_DEACTIVATED = 3;
+}
+
+message KeyMetadata {
+  string key_id = 1;
+  KeyAlgorithm algorithm = 2;
+  KeyStatus status = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp rotated_at = 5;
+  map<string, string> labels = 6;
+}
+
+message GenerateKeyRequest {
+  KeyAlgorithm algorithm = 1;
+  map<string, string> labels = 2;
+}
+
+message GenerateKeyResponse {
+  KeyMetadata metadata = 1;
+}
+
+message GetPublicKeyRequest {
+  string key_id = 1;
+}
+
+message GetPublicKeyResponse {
+  string key_id = 1;
+  bytes public_key_der = 2;
+  KeyAlgorithm algorithm = 3;
+}
+
+message ListKeysRequest {
+  KeyStatus status_filter = 1;
+}
+
+message ListKeysResponse {
+  repeated KeyMetadata keys = 1;
+}
+
+message RotateKeyRequest {
+  string key_id = 1;
+}
+
+message RotateKeyResponse {
+  KeyMetadata old_key = 1;
+  KeyMetadata new_key = 2;
+}
+
+message DeactivateKeyRequest {
+  string key_id = 1;
+}
+
+message DeactivateKeyResponse {
+  KeyMetadata metadata = 1;
+}
+
+message WatchKeyEventsRequest {}
+
+enum KeyEventType {
+  KEY_EVENT_TYPE_UNSPECIFIED = 0;
+  KEY_EVENT_TYPE_CREATED = 1;
+  KEY_EVENT_TYPE_ROTATED = 2;
+  KEY_EVENT_TYPE_DEACTIVATED = 3;
+}
+
+message KeyEvent {
+  KeyEventType type = 1;
+  KeyMetadata metadata = 2;
+  google.protobuf.Timestamp timestamp = 3;
+}

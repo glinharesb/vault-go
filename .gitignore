@@ -1,0 +1,35 @@
+# Binaries
+vault-server
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build
+/bin/
+
+# Test
+*.test
+*.out
+coverage.txt
+coverage.html
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TLS certs (generated)
+certs/*.pem
+certs/*.key
+certs/*.crt
+
+# Keystore data
+*.json.tmp
+data/

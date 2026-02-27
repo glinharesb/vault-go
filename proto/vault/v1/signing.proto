@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package vault.v1;
+
+option go_package = "github.com/glinharesb/vault-go/gen/vault/v1;vaultpb";
+
+service SigningService {
+  rpc Sign(SignRequest) returns (SignResponse);
+  rpc Verify(VerifyRequest) returns (VerifyResponse);
+  rpc BatchSign(BatchSignRequest) returns (BatchSignResponse);
+  rpc StreamSign(stream StreamSignRequest) returns (stream StreamSignResponse);
+}
+
+message SignRequest {
+  string key_id = 1;
+  bytes data = 2;
+}
+
+message SignResponse {
+  bytes signature = 1;
+  string key_id = 2;
+}
+
+message VerifyRequest {
+  string key_id = 1;
+  bytes data = 2;
+  bytes signature = 3;
+}
+
+message VerifyResponse {
+  bool valid = 1;
+}
+
+message BatchSignRequest {
+  string key_id = 1;
+  repeated bytes data = 2;
+}
+
+message BatchSignResponse {
+  repeated SignResult results = 1;
+}
+
+message SignResult {
+  bytes signature = 1;
+  string error = 2;
+}
+
+message StreamSignRequest {
+  string key_id = 1;
+  bytes data = 2;
+}
+
+message StreamSignResponse {
+  bytes signature = 1;
+  string error = 2;
+}

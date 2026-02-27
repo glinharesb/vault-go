@@ -1,5 +1,5 @@
 # Binaries
-vault-server
+/vault-server
 *.exe
 *.dll
 *.so
